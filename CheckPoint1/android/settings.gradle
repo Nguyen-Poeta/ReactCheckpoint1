@@ -1,0 +1,3 @@
+rootProject.name = 'CheckPoint1'
+
+include ':app'
