@@ -8,18 +8,41 @@
 
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, ImageBackground, TouchableOpacity, Image, TextInput, Button, View, Alert } from 'react-native';
+import PropTypes from 'prop-types'
 import { createStackNavigator, } from 'react-navigation'
 
 class ImageButton extends Component {
 
+  constructor() {
+    super()
+    this.renderIf = this.renderIf.bind(this)
+  }
+
+  renderIf(condition, content) {
+    if (condition) {
+      return content
+    } else {
+      return null
+    }
+  }
+
   render() {
-    return (
+    return this.renderIf(this.props.visible,
       <TouchableOpacity onPress={this.props.onPress} style={this.props.style}>
         <Image source={this.props.source} style={this.props.imageStyle} ></Image>
       </TouchableOpacity>
     )
   }
 }
+
+ImageButton.propTypes = {
+  visible: PropTypes.bool
+}
+
+ImageButton.defaultProps = {
+  visible: true
+}
+
 
 class HomeScreen extends Component {
 
@@ -28,7 +51,7 @@ class HomeScreen extends Component {
   }
 
   _navigateToOnboarding(navigate) {
-    navigate("Step1")
+    navigate("OnBoarding")
   }
 
   render() {
@@ -46,7 +69,7 @@ class HomeScreen extends Component {
   }
 }
 
-class BaseStep extends Component {
+class OnBoardingScreen extends Component {
   static navigationOptions = {
     title: " ",
     headerRight: null,
@@ -62,6 +85,9 @@ class BaseStep extends Component {
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this)
     this._goToNextPage = this._goToNextPage.bind(this)
     this._goToPreviousPage = this._goToPreviousPage.bind(this)
+    this._getCurrentText = this._getCurrentText.bind(this)
+    this._getCurrentBackgroundImage = this._getCurrentBackgroundImage.bind(this)
+    this.state = { currentPosition: 0 }
   }
 
   _onCloseButtonClick() {
@@ -69,36 +95,69 @@ class BaseStep extends Component {
   }
 
   _goToNextPage() {
-    switch (this.state.currentPosition) {
-      case 1:
-        this.props.navigation.navigate("Step2")
-        break
-      case 2:
-        this.props.navigation.navigate("Step3")
-        break
-      case 3:
-
-        break
-    }
-
+    this.setState(previousState => {
+      nextPosition = previousState.currentPosition + 1
+      return { currentPosition: nextPosition }
+    })
   }
 
   _goToPreviousPage() {
-    this.props.navigation.goBack()
+    this.setState(previousState => {
+      nextPosition = previousState.currentPosition - 1
+      return { currentPosition: nextPosition }
+    })
   }
-}
 
-class FirstStepScreen extends BaseStep {
+  _getCurrentText() {
+    switch (this.state.currentPosition) {
+      case 0:
+        return "Give your picture the power to change the world. Choose a campaign you love and post to support them"
+      case 1:
+        return "For every 'like' your photo gets on Pixhug and Facebook, the sponsor donate 10$ to the campain."
+      case 2:
+        return "Start Changing the world now by signing up with Facebook."
+      default:
+        return "Hello"
+    }
+  }
 
-  constructor() {
-    super()
-    this.state = { currentPosition: 1 }
+  _getCurrentBackgroundImage() {
+    switch (this.state.currentPosition) {
+      case 0:
+        return require("./resources/images/onboarding_01.png")
+      case 1:
+        return require("./resources/images/onboarding_02.png")
+      case 2:
+        return require("./resources/images/onboarding_03.png")
+      default:
+        return require("./resources/images/onboarding_01.png")
+    }
+  }
+
+  _isShowPreviousButton() {
+    if(this.state.currentPosition == 0) {
+      return false
+    } else {
+      return true
+    }
+  }
+
+  _isShowNextButton() {
+    if(this.state.currentPosition == 2) {
+      return false
+    } else {
+      return true
+    }
   }
 
   render() {
-    let text = "Give your picture the power to change the world. Choose a campaign you love and post to support them"
+    let text = this._getCurrentText()
+    let backgroundImage = this._getCurrentBackgroundImage()
+    let backButtonImage = require("./resources/icons/ic_previous.png")
+    let nextButtonImage = require("./resources/icons/ic_next.png")
+
     return (
-      <ImageBackground source={require("./resources/images/onboarding_01.png")} style={styles.container}>
+      <ImageBackground source={backgroundImage} style={styles.container}>
 
         {/* Close button */}
         <View style={{ alignItems: "flex-end", flexDirection: "column" }}  >
@@ -109,75 +168,11 @@ class FirstStepScreen extends BaseStep {
 
         {/* Content */}
         <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "baseline" }}>
-          <ImageButton source={require("./resources/icons/ic_previous.png")} imageStyle={styles.arrowButton}
-            onPress={this._goToPreviousPage} />
+          <ImageButton source={backButtonImage} imageStyle={styles.arrowButton}
+            onPress={this._goToPreviousPage} visible = {this._isShowPreviousButton()} />
           <Text style={styles.onboardingText}>{text}</Text>
-          <ImageButton source={require("./resources/icons/ic_next.png")} imageStyle={styles.arrowButton}
-            onPress={this._goToNextPage} />
-        </View>
-      </ImageBackground>
-    )
-  }
-}
-
-class SecondStepScreen extends BaseStep {
-
-  constructor() {
-    super()
-    this.state = { currentPosition: 2 }
-  }
-
-  render() {
-    let text = "For every 'like' your photo gets on Pixhug and Facebook, the sponsor donate 10$ to the campain."
-    return (
-      <ImageBackground source={require("./resources/images/onboarding_02.png")} style={styles.container}>
-
-        {/* Close button */}
-        <View style={{ alignItems: "flex-end", flexDirection: "column" }}  >
-          <ImageButton source={require("./resources/icons/ic_close.png")}
-            imageStyle={styles.generalComponent}
-            onPress={this._onCloseButtonClick} />
-        </View>
-
-        {/* Content */}
-        <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "baseline" }}>
-          <ImageButton source={require("./resources/icons/ic_previous.png")} imageStyle={styles.arrowButton}
-            onPress={this._goToPreviousPage} />
-          <Text style={styles.onboardingText}>{text}</Text>
-          <ImageButton source={require("./resources/icons/ic_next.png")} imageStyle={styles.arrowButton}
-            onPress={this._goToNextPage} />
-        </View>
-      </ImageBackground>
-    )
-  }
-}
-
-class ThirdStepScreen extends BaseStep {
-
-  constructor() {
-    super()
-    this.state = { currentPosition: 3 }
-  }
-
-  render() {
-    let text = "Start Changing the world now by signing up with Facebook."
-    return (
-      <ImageBackground source={require("./resources/images/onboarding_03.png")} style={styles.container}>
-
-        {/* Close button */}
-        <View style={{ alignItems: "flex-end", flexDirection: "column" }}  >
-          <ImageButton source={require("./resources/icons/ic_close.png")}
-            imageStyle={styles.generalComponent}
-            onPress={this._onCloseButtonClick} />
-        </View>
-
-        {/* Content */}
-        <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "baseline" }}>
-          <ImageButton source={require("./resources/icons/ic_previous.png")} imageStyle={styles.arrowButton}
-            onPress={this._goToPreviousPage} />
-          <Text style={styles.onboardingText}>{text}</Text>
-          <ImageButton source={require("./resources/icons/ic_next.png")} imageStyle={styles.arrowButton}
-            onPress={this._goToNextPage} />
+          <ImageButton source={nextButtonImage} imageStyle={styles.arrowButton}
+            onPress={this._goToNextPage} visible = {this._isShowNextButton()} />
         </View>
       </ImageBackground>
     )
@@ -186,9 +181,7 @@ class ThirdStepScreen extends BaseStep {
 
 const App = createStackNavigator({
   Home: HomeScreen,
-  Step1: FirstStepScreen,
-  Step2: SecondStepScreen,
-  Step3: ThirdStepScreen,
+  OnBoarding: OnBoardingScreen
 })
 
 export default App
