@@ -11,36 +11,31 @@ import { Platform, StyleSheet, Text, ImageBackground, TouchableOpacity, Image, T
 import PropTypes from 'prop-types'
 import { createStackNavigator, } from 'react-navigation'
 
+const backButtonImage = require("./resources/icons/ic_previous.png")
+const nextButtonImage = require("./resources/icons/ic_next.png")
+const background1 = require("./resources/images/onboarding_01.png")
+const background2 = require("./resources/images/onboarding_02.png")
+const background3 = require("./resources/images/onboarding_03.png")
+
 class ImageButton extends Component {
 
-  constructor() {
-    super()
-    this.renderIf = this.renderIf.bind(this)
-  }
-
-  renderIf(condition, content) {
-    if (condition) {
-      return content
-    } else {
-      return null
-    }
-  }
-
   render() {
-    return this.renderIf(this.props.visible,
-      <TouchableOpacity onPress={this.props.onPress} style={this.props.style}>
-        <Image source={this.props.source} style={this.props.imageStyle} ></Image>
-      </TouchableOpacity>
+    return (
+      <View style={this.props.style}>
+        <TouchableOpacity onPress={this.props.onPress} style={!this.props.visible ? { display: 'none' } : null}>
+          <Image source={this.props.source} style={this.props.imageStyle} ></Image>
+        </TouchableOpacity>
+      </View>
     )
   }
 }
 
 ImageButton.propTypes = {
-  visible: PropTypes.bool
+  visible: PropTypes.bool,
 }
 
 ImageButton.defaultProps = {
-  visible: true
+  visible: true,
 }
 
 
@@ -124,18 +119,18 @@ class OnBoardingScreen extends Component {
   _getCurrentBackgroundImage() {
     switch (this.state.currentPosition) {
       case 0:
-        return require("./resources/images/onboarding_01.png")
+        return background1
       case 1:
-        return require("./resources/images/onboarding_02.png")
+        return background2
       case 2:
-        return require("./resources/images/onboarding_03.png")
+        return background3
       default:
-        return require("./resources/images/onboarding_01.png")
+        return background1
     }
   }
 
   _isShowPreviousButton() {
-    if(this.state.currentPosition == 0) {
+    if (this.state.currentPosition == 0) {
       return false
     } else {
       return true
@@ -143,7 +138,7 @@ class OnBoardingScreen extends Component {
   }
 
   _isShowNextButton() {
-    if(this.state.currentPosition == 2) {
+    if (this.state.currentPosition == 2) {
       return false
     } else {
       return true
@@ -153,26 +148,28 @@ class OnBoardingScreen extends Component {
   render() {
     let text = this._getCurrentText()
     let backgroundImage = this._getCurrentBackgroundImage()
-    let backButtonImage = require("./resources/icons/ic_previous.png")
-    let nextButtonImage = require("./resources/icons/ic_next.png")
 
     return (
       <ImageBackground source={backgroundImage} style={styles.container}>
 
         {/* Close button */}
         <View style={{ alignItems: "flex-end", flexDirection: "column" }}  >
+
           <ImageButton source={require("./resources/icons/ic_close.png")}
             imageStyle={styles.generalComponent}
             onPress={this._onCloseButtonClick} />
         </View>
 
         {/* Content */}
-        <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "baseline" }}>
-          <ImageButton source={backButtonImage} imageStyle={styles.arrowButton}
-            onPress={this._goToPreviousPage} visible = {this._isShowPreviousButton()} />
+        <View style={{ flexDirection: "row", alignItems: "center", padding: 5}}>
+
+          <ImageButton source={backButtonImage} imageStyle={styles.arrowButton} style={styles.arrowButton}
+            onPress={this._goToPreviousPage} visible={this._isShowPreviousButton()} />
+
           <Text style={styles.onboardingText}>{text}</Text>
-          <ImageButton source={nextButtonImage} imageStyle={styles.arrowButton}
-            onPress={this._goToNextPage} visible = {this._isShowNextButton()} />
+
+          <ImageButton source={nextButtonImage} imageStyle={styles.arrowButton} style={styles.arrowButton}
+            onPress={this._goToNextPage} visible={this._isShowNextButton()} />
         </View>
       </ImageBackground>
     )
@@ -207,8 +204,6 @@ const styles = StyleSheet.create({
   arrowButton: {
     width: 18,
     height: 30,
-    margin: 10,
-    alignSelf: "stretch",
   }
 })
 
